@@ -1,0 +1,13 @@
+{
+  "name": "vidyutchain-phase1",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VidyutChain Phase 1 software MVP",
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "install:all": "npm install --prefix backend && npm install --prefix blockchain && npm install --prefix frontend && npm install --prefix mobile"
+  }
+}

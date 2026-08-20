@@ -4,7 +4,7 @@
 **Financial Input:** INR 5,00,000
 **Scope:** Complete software MVP — backend, blockchain framework, web dashboard, AI analytics, mobile app, integration, security testing, documentation
 **Data Strategy:** All analytics/AI on simulated (dummy) meter data via a Meter Simulator — no physical hardware in Phase 1 (hardware is Phase 2: Aug 2026 – Jan 2027)
-**Tracker Last Updated:** August 19, 2026
+**Tracker Last Updated:** August 20, 2026
 
 ---
 
@@ -56,12 +56,12 @@
 
 | # | Deliverable | Status | Notes |
 |---|---|---|---|
-| 3.1 | Blockchain framework selection & environment setup | ⬜ Not Started | Hyperledger Fabric direction |
-| 3.2 | Chaincode/smart-contract for energy audit events | ⬜ Not Started | |
-| 3.3 | Ledger record schema (meter registration, energy checkpoints, billing validation) | ⬜ Not Started | |
-| 3.4 | Backend ↔ blockchain integration service | ⬜ Not Started | Backend writes/reads ledger records |
-| 3.5 | Ledger verification/query API (prove record integrity) | ⬜ Not Started | |
-| 3.6 | Blockchain audit-log prototype demonstrated with real flow | ⬜ Not Started | |
+| 3.1 | Blockchain framework selection & environment setup | ✅ Completed | EVM-compatible local private chain via Hardhat; production network remains configurable |
+| 3.2 | Chaincode/smart-contract for energy audit events | ✅ Completed | Solidity `EnergyAudit.sol` registers meters and stores hash-only audit events |
+| 3.3 | Ledger record schema (meter registration, energy checkpoints, billing validation) | ✅ Completed | Phase 1 schema covers meter registration and anomaly audit evidence |
+| 3.4 | Backend ↔ blockchain integration service | ✅ Completed | Backend registers meters and logs AI anomaly hashes with nonce-safe ethers writes |
+| 3.5 | Ledger verification/query API (prove record integrity) | ✅ Completed | Authenticated telemetry audit endpoint re-hashes stored evidence and verifies on-chain |
+| 3.6 | Blockchain audit-log prototype demonstrated with real flow | ✅ Completed | Local-chain live run verified original payloads and rejected tampered payloads |
 
 ---
 
@@ -77,7 +77,7 @@
 | 4.6 | Anomaly classification (normal / consumption / overload / meter / theft-indicator / communication) | ⬜ Not Started | |
 | 4.7 | Theft-risk scoring model (multi-signal, risk score not binary) | ⬜ Not Started | |
 | 4.8 | Consumption/load forecasting module (initial) | ⬜ Not Started | |
-| 4.9 | AI results integration into backend (alerts, dashboard feed) | ⬜ Not Started | |
+| 4.9 | AI results integration into backend (alerts, dashboard feed) | ✅ Completed | AI results persist with alerts and trigger blockchain audit logging for anomalies |
 
 ---
 
@@ -115,7 +115,7 @@
 
 | # | Deliverable | Status | Notes |
 |---|---|---|---|
-| 7.1 | End-to-end integration: Simulator → Backend → DB → AI → Alert → Blockchain → Dashboard/Mobile | ⬜ Not Started | **The core Phase 1 demo** |
+| 7.1 | End-to-end integration: Simulator → Backend → DB → AI → Alert → Blockchain → Dashboard/Mobile | 🟡 In Progress | Backend-to-AI-to-blockchain path is implemented; live MongoDB prevents the full persistence demo |
 | 7.2 | Security testing: auth flows, API security, input validation, injection checks | ⬜ Not Started | |
 | 7.3 | Data security: encryption in transit (TLS), secure storage review | ⬜ Not Started | |
 | 7.4 | Access control testing (RBAC, device auth) | ⬜ Not Started | |

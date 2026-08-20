@@ -16,6 +16,14 @@
 3. **Pragmatic tech decisions** (Section 3) — one database instead of two, Expo for mobile, lightweight blockchain.
 4. **STPI folder reuse** — dataset, anomaly labels, feature engineering, and charts are ALREADY DONE. This saves roughly half a day of AI module work.
 
+### Current implementation checkpoint — August 20, 2026
+
+- AI classification is connected to telemetry ingestion and alert persistence.
+- The Solidity `EnergyAudit` contract runs on a local EVM private chain and stores hash-only meter/anomaly evidence.
+- Meter registration and AI anomaly events are submitted through ethers.js with nonce-safe serialized writes.
+- `GET /api/telemetry/audit/:telemetryId` verifies the current database evidence against the chain and detects tampering.
+- MongoDB Atlas DNS resolution remains the only blocker for the complete simulator → database → AI → alert → blockchain demonstration.
+
 ### ❌ What will NOT happen in 3 days (accept now, document as roadmap):
 - No Hyperledger Fabric production network (use local/private chain or hash-ledger instead)
 - No real InfluxDB cluster (MongoDB time-series collections instead)
