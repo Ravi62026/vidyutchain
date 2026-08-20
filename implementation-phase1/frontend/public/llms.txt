@@ -1,0 +1,7 @@
+# VidyutChain
+
+VidyutChain provides real-time energy intelligence with verifiable blockchain-backed audit evidence.
+
+- [Home](http://localhost:5173/)
+- [Login](http://localhost:5173/login)
+- [Register](http://localhost:5173/register)
