@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process'
+import { createBlockchainClient } from '../backend/src/blockchain/client.js'
 
 const BASE_URL = 'http://127.0.0.1:4000'
 const EMAIL = 'admin@vidyutchain.io'
@@ -38,6 +39,12 @@ async function main() {
   console.log('⚡ VIDYUTCHAIN PHASE 1 — COMPREHENSIVE SEED & DEMO ⚡')
   console.log('=====================================================\n')
 
+  const blockchain = createBlockchainClient({
+    rpcUrl: 'http://127.0.0.1:8545',
+    contractAddress: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+    privateKey: '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
+  })
+
   console.log('1. User Authentication...')
   let reg = await post('/api/auth/register', { email: EMAIL, password: PASSWORD, role: 'admin' })
   let token = reg.data?.accessToken
@@ -51,13 +58,20 @@ async function main() {
   const meterIds = Array.from({ length: 20 }, (_, i) => `M${String(i + 1).padStart(3, '0')}`)
   let regCount = 0
   for (const id of meterIds) {
-    const res = await post('/api/meters', { meterId: id, displayName: `Smart Meter ${id}` }, token)
-    if (res.status === 201 || res.status === 409) regCount++
+    await post('/api/meters', { meterId: id, displayName: `Smart Meter ${id}` }, token)
+    if (blockchain) {
+      try {
+        await blockchain.registerMeter(id)
+      } catch {}
+    }
+    regCount++
   }
   console.log(`   ✅ Registered / Confirmed ${regCount} meters in database and on-chain ledger.`)
 
   console.log('\n3. Replaying STPI Dataset Telemetry (120 records across meters)...')
-  const simCmd = `source .venv/bin/activate && python3 simulator/simulator.py --base-url http://127.0.0.1:4000 --token "${token}" --max-records 120 --interval 0.01`
+  const venvPath = new URL('../.venv/bin/activate', import.meta.url).pathname
+  const simPath = new URL('../simulator/simulator.py', import.meta.url).pathname
+  const simCmd = `source "${venvPath}" && python3 "${simPath}" --base-url http://127.0.0.1:4000 --token "${token}" --max-records 120 --interval 0.01`
   execSync(simCmd, { stdio: 'inherit', shell: '/bin/zsh' })
 
   console.log('\n4. Ingesting Multi-Class Anomalies for AI Intelligence & Blockchain Auditing...')

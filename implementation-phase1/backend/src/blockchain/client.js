@@ -10,6 +10,7 @@ import {
 import { env } from '../config/env.js'
 
 const ENERGY_AUDIT_ABI = [
+  'function registeredMeters(bytes32 meterIdHash) view returns (bool)',
   'function registerMeter(bytes32 meterIdHash)',
   'function logAuditEvent(bytes32 meterIdHash, bytes32 eventTypeHash, bytes32 payloadHash) returns (bytes32 eventId)',
   'function verifyAuditEvent(bytes32 meterIdHash, bytes32 eventTypeHash, bytes32 payloadHash) view returns (bool exists, bytes32 eventId)',
@@ -74,6 +75,11 @@ export function createBlockchainClient({
     async logAuditEvent({ meterId, eventType, payload }) {
       return enqueueWrite(async () => {
         const hashes = auditHashes({ meterId, eventType, payload })
+        const isRegistered = await readOnlyContract.registeredMeters(hashes.meterIdHash)
+        if (!isRegistered) {
+          const regTx = await contract.registerMeter(hashes.meterIdHash)
+          await regTx.wait()
+        }
         const transaction = await contract.logAuditEvent(
           hashes.meterIdHash,
           hashes.eventTypeHash,
@@ -83,7 +89,7 @@ export function createBlockchainClient({
         const event = receipt.logs.find((log) => log.fragment?.name === 'AuditEventLogged')
         return {
           ...hashes,
-          eventId: event?.args?.eventId,
+          eventId: event?.args?.eventId ?? receipt.hash,
           transactionHash: receipt.hash ?? transaction.hash,
         }
       })

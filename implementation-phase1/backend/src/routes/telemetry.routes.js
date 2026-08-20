@@ -224,6 +224,26 @@ async function updateLastSeen(meterIds, timestamp) {
 
 export function createTelemetryRouter({ blockchainClient = null } = {}) {
   const router = Router()
+
+  router.post('/simulate-ai', async (request, response) => {
+    try {
+      const payload = {
+        meterId: request.body.meterId || 'SIMULATOR-001',
+        timestamp: request.body.timestamp || new Date().toISOString(),
+        voltage: request.body.voltage !== undefined ? Number(request.body.voltage) : 230,
+        current: request.body.current !== undefined ? Number(request.body.current) : 1.5,
+        powerKw: request.body.powerKw !== undefined ? Number(request.body.powerKw) : 0.35,
+        powerFactor: request.body.powerFactor !== undefined ? Number(request.body.powerFactor) : 0.95,
+        importKwh: request.body.importKwh !== undefined ? Number(request.body.importKwh) : 0.1,
+        exportKwh: request.body.exportKwh !== undefined ? Number(request.body.exportKwh) : 0,
+      }
+      const aiResult = await classifyTelemetry(payload)
+      return response.json({ prediction: aiResult })
+    } catch (error) {
+      return response.status(500).json({ error: error.message })
+    }
+  })
+
   router.use(requireAuth)
 
   router.post('/', async (request, response) => {
