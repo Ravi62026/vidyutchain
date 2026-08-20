@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Build & Cache
+dist/
+build/
+coverage/
+.cache/
+.pytest_cache/
+*.log
+.DS_Store
+
+# Blockchain
+implementation-phase1/blockchain/artifacts/
+implementation-phase1/blockchain/cache/
+implementation-phase1/blockchain/typechain/
+implementation-phase1/blockchain/typechain-types/

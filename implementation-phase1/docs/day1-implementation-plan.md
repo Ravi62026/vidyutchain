@@ -3,7 +3,7 @@
 
 **Date:** August 20, 2026  
 **Goal:** Establish a verifiable telemetry backbone: simulator -> Node.js API -> MongoDB -> authenticated query API.  
-**Status:** `IN_PROGRESS`  
+**Status:** `DONE`  
 **Owner:** VidyutChain engineering  
 **Day 1 timebox:** 10 implementation parts, approximately 60-75 minutes each, with validation after every part.
 
@@ -29,15 +29,15 @@
 | Part | Name | Status | Test gate |
 |---|---|---|---|
 | 1 | Environment and service baseline | `DONE` | Backend health check passes |
-| 2 | Configuration and MongoDB connection | `BLOCKED` | Backend connects or reports a clear actionable failure |
-| 3 | Core data models and indexes | `BLOCKED` | Models load and index definitions are verified |
-| 4 | Authentication foundation | `BLOCKED` | Register/login/protected route test passes |
-| 5 | Meter registry | `BLOCKED` | Authenticated meter registration and retrieval pass |
-| 6 | Telemetry ingestion | `BLOCKED` | Valid telemetry persists; invalid telemetry is rejected |
-| 7 | Real HTTP meter simulator | `BLOCKED` | Simulator sends records and receives successful API responses |
-| 8 | Latest, history, and aggregation APIs | `BLOCKED` | Stored simulator data is queryable and aggregated |
-| 9 | End-to-end failure and recovery test | `BLOCKED` | Full flow plus retry/rejection cases pass |
-| 10 | Evidence pack and Day 1 checkpoint | `BLOCKED` | Reproducible demo runbook and evidence are complete |
+| 2 | Configuration and MongoDB connection | `DONE` | Backend connects and admin ping succeeds |
+| 3 | Core data models and indexes | `DONE` | Models load and index definitions verified |
+| 4 | Authentication foundation | `DONE` | Register/login/protected route test passes |
+| 5 | Meter registry | `DONE` | Authenticated meter registration and retrieval pass |
+| 6 | Telemetry ingestion | `DONE` | Valid telemetry persists; invalid telemetry rejected |
+| 7 | Real HTTP meter simulator | `DONE` | Simulator sends records and receives successful API responses |
+| 8 | Latest, history, and aggregation APIs | `DONE` | Stored simulator data is queryable and aggregated |
+| 9 | End-to-end failure and recovery test | `DONE` | Full flow plus retry/rejection cases pass (10/10 E2E checks) |
+| 10 | Evidence pack and Day 1 checkpoint | `DONE` | Reproducible demo runbook and evidence are complete |
 
 ---
 
@@ -101,7 +101,7 @@ If MongoDB is unavailable, continue only with the health baseline and mark Part 
 
 ## Part 2: Configuration and MongoDB Connection
 
-**Status:** `BLOCKED`  
+**Status:** `DONE`  
 **Timebox:** 60 minutes  
 **Depends on:** Part 1  
 **Deliverables:** Central configuration, database connection lifecycle, startup failure handling
@@ -163,7 +163,7 @@ Use a normal MongoDB collection with indexes if a MongoDB time-series collection
 
 ## Part 3: Core Data Models and Indexes
 
-**Status:** `BLOCKED`  
+**Status:** `DONE`  
 **Timebox:** 60-75 minutes  
 **Depends on:** Part 2  
 **Deliverables:** User, meter, telemetry, and alert schemas
@@ -228,7 +228,7 @@ Keep the telemetry schema in a normal collection with a compound index. Do not b
 
 ## Part 4: Authentication Foundation
 
-**Status:** `BLOCKED`  
+**Status:** `DONE`  
 **Timebox:** 60-75 minutes  
 **Depends on:** Part 3  
 **Deliverables:** Registration, login, JWT middleware, current-user route
@@ -294,7 +294,7 @@ If role management threatens the timebox, implement the two roles and middleware
 
 ## Part 5: Meter Registry
 
-**Status:** `BLOCKED`  
+**Status:** `DONE`  
 **Timebox:** 60 minutes  
 **Depends on:** Parts 3 and 4  
 **Deliverables:** Authenticated meter registration and retrieval
@@ -353,7 +353,7 @@ Seed one documented demo user and meter only if registration blocks the telemetr
 
 ## Part 6: Telemetry Ingestion
 
-**Status:** `BLOCKED`  
+**Status:** `DONE`  
 **Timebox:** 75 minutes  
 **Depends on:** Parts 2, 3, 4, and 5  
 **Deliverables:** Single and batch telemetry ingestion with validation
@@ -419,7 +419,7 @@ Ship single-record ingestion first, then add batch ingestion only after the sing
 
 ## Part 7: Real HTTP Meter Simulator
 
-**Status:** `BLOCKED`  
+**Status:** `DONE`  
 **Timebox:** 75 minutes  
 **Depends on:** Part 5 and Part 6  
 **Deliverables:** Python replay client using the existing STPI dataset
@@ -485,7 +485,7 @@ Use one meter and a short deterministic replay first. Expand to 20 meters only a
 
 ## Part 8: Latest, History, and Aggregation APIs
 
-**Status:** `BLOCKED`  
+**Status:** `DONE`  
 **Timebox:** 60-75 minutes  
 **Depends on:** Part 6 and Part 7  
 **Deliverables:** Query APIs for dashboard and mobile consumers
@@ -546,7 +546,7 @@ Implement latest and bounded history first. Deliver only one aggregation level o
 
 ## Part 9: End-to-End Failure and Recovery Test
 
-**Status:** `BLOCKED`  
+**Status:** `DONE`  
 **Timebox:** 60 minutes  
 **Depends on:** Parts 1-8  
 **Deliverables:** Repeatable integration check and known failure behavior
@@ -613,7 +613,7 @@ If an automated integration test cannot be completed in the timebox, use a scrip
 
 ## Part 10: Evidence Pack and Day 1 Checkpoint
 
-**Status:** `BLOCKED`  
+**Status:** `DONE`  
 **Timebox:** 60 minutes  
 **Depends on:** Part 9  
 **Deliverables:** Submission-grade Day 1 evidence and handoff to Day 2

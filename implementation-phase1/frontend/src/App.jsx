@@ -7,6 +7,11 @@ import { PublicLayout } from './components/PublicLayout.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 import { HomePage } from './pages/HomePage.jsx'
 
+const PlatformPage = lazy(() => import('./pages/PlatformPage.jsx').then(({ PlatformPage }) => ({ default: PlatformPage })))
+const ArchitecturePage = lazy(() => import('./pages/ArchitecturePage.jsx').then(({ ArchitecturePage }) => ({ default: ArchitecturePage })))
+const AiIntelligencePage = lazy(() => import('./pages/AiIntelligencePage.jsx').then(({ AiIntelligencePage }) => ({ default: AiIntelligencePage })))
+const BlockchainAuditPage = lazy(() => import('./pages/BlockchainAuditPage.jsx').then(({ BlockchainAuditPage }) => ({ default: BlockchainAuditPage })))
+
 const AlertsPage = lazy(() => import('./pages/AlertsPage.jsx').then(({ AlertsPage }) => ({ default: AlertsPage })))
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage.jsx').then(({ AnalyticsPage }) => ({ default: AnalyticsPage })))
 const AuditPage = lazy(() => import('./pages/AuditPage.jsx').then(({ AuditPage }) => ({ default: AuditPage })))
@@ -20,7 +25,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage.jsx').then(({ Setti
 const SystemHealthPage = lazy(() => import('./pages/SystemHealthPage.jsx').then(({ SystemHealthPage }) => ({ default: SystemHealthPage })))
 
 function RouteLoading() {
-  return <div className="grid min-h-screen place-items-center bg-[#eef3f0] text-sm font-semibold text-[#64736e]">Loading VidyutChain…</div>
+  return <div className="grid min-h-screen place-items-center bg-[#f4f7f5] text-sm font-semibold text-[#64736e]">Loading VidyutChain…</div>
 }
 
 export default function App() {
@@ -29,12 +34,22 @@ export default function App() {
       <BrowserRouter>
         <Suspense fallback={<RouteLoading />}>
           <Routes>
+            {/* Public Layout & Dedicated Public Explanatory Pages */}
             <Route element={<PublicLayout />}>
               <Route index element={<HomePage />} />
+              <Route path="platform" element={<PlatformPage />} />
+              <Route path="architecture" element={<ArchitecturePage />} />
+              <Route path="arch" element={<Navigate to="/architecture" replace />} />
+              <Route path="ai-intelligence" element={<AiIntelligencePage />} />
+              <Route path="ai" element={<Navigate to="/ai-intelligence" replace />} />
+              <Route path="blockchain-audit" element={<BlockchainAuditPage />} />
+              <Route path="audit-overview" element={<Navigate to="/blockchain-audit" replace />} />
+
               <Route path="login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
               <Route path="register" element={<PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>} />
             </Route>
 
+            {/* Protected Console App Routes (Auth Required) */}
             <Route element={<ProtectedRoute />}>
               <Route path="app" element={<AppLayout />}>
                 <Route index element={<DashboardPage />} />

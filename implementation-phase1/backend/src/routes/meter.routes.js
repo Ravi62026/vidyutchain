@@ -25,6 +25,8 @@ function publicMeter(meter) {
     status: meter.status,
     lastSeenAt: meter.lastSeenAt,
     owner: meter.owner.toString(),
+    blockchainRegistrationStatus: meter.blockchainRegistrationStatus ?? 'disabled',
+    blockchainRegistrationTransactionHash: meter.blockchainRegistrationTransactionHash ?? null,
     createdAt: meter.createdAt,
     updatedAt: meter.updatedAt,
   }
@@ -40,25 +42,32 @@ export function createMeterRouter({ blockchainClient = null } = {}) {
       return response.status(400).json({ error: 'Invalid meter data', details: parsed.error.flatten() })
     }
 
-    const meter = await Meter.create({
-      ...parsed.data,
-      owner: request.user.sub,
-    })
+    try {
+      const meter = await Meter.create({
+        ...parsed.data,
+        owner: request.user.sub,
+      })
 
-    if (blockchainClient) {
-      try {
-        const registration = await blockchainClient.registerMeter(meter.meterId)
-        meter.blockchainRegistrationStatus = 'confirmed'
-        meter.blockchainRegistrationTransactionHash = registration.transactionHash
-        await meter.save()
-      } catch (error) {
-        request.log.warn({ err: error, meterId: meter.meterId }, 'blockchain meter registration failed')
-        meter.blockchainRegistrationStatus = 'failed'
-        await meter.save()
+      if (blockchainClient) {
+        try {
+          const registration = await blockchainClient.registerMeter(meter.meterId)
+          meter.blockchainRegistrationStatus = 'confirmed'
+          meter.blockchainRegistrationTransactionHash = registration.transactionHash
+          await meter.save()
+        } catch (error) {
+          request.log.warn({ err: error, meterId: meter.meterId }, 'blockchain meter registration failed')
+          meter.blockchainRegistrationStatus = 'failed'
+          await meter.save()
+        }
       }
-    }
 
-    return response.status(201).json({ meter: publicMeter(meter) })
+      return response.status(201).json({ meter: publicMeter(meter) })
+    } catch (error) {
+      if (error && error.code === 11000) {
+        return response.status(409).json({ error: 'Meter already registered' })
+      }
+      throw error
+    }
   })
 
   router.get('/', async (request, response) => {

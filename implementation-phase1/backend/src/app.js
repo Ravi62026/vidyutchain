@@ -15,7 +15,7 @@ export function createApp({ blockchainClient = createBlockchainClient() } = {}) 
   app.use(helmet())
   app.use(cors())
   app.use(express.json({ limit: '1mb' }))
-  app.use(rateLimit({ windowMs: 60 * 1000, limit: 120 }))
+  app.use(rateLimit({ windowMs: 60 * 1000, limit: 600 }))
 
   app.use('/api/auth', createAuthRouter())
   app.use('/api/meters', createMeterRouter({ blockchainClient }))

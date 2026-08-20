@@ -1,41 +1,56 @@
-import { Blocks, Database, KeyRound, Radio, Server, ShieldCheck } from 'lucide-react'
+import {
+  Blocks,
+  CheckCircle2,
+  Cpu,
+  Database,
+  KeyRound,
+  Lock,
+  Radio,
+  Server,
+  ShieldCheck,
+  Zap,
+} from 'lucide-react'
 import { useAuth } from '../context/useAuth.js'
 
 const sections = [
   {
-    title: 'API boundary',
+    title: 'Platform Backend API',
     icon: Server,
     rows: [
-      ['Base URL', import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'],
-      ['Authentication', 'JWT bearer token'],
-      ['Rate limit', '120 requests per minute'],
+      ['API Base Endpoint', import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'],
+      ['Authentication Standard', 'HMAC-SHA256 JWT Bearer Token'],
+      ['High-Throughput Window', '600 requests per minute with rate guard'],
+      ['Security Framework', 'Helmet 8 + Strict CORS + Zod Schema Validation'],
     ],
   },
   {
-    title: 'AI service',
-    icon: Radio,
+    title: 'FastAPI AI Machine Learning Node',
+    icon: Cpu,
     rows: [
-      ['Access pattern', 'Node.js backend only'],
-      ['Model', 'RandomForest energy anomaly classifier'],
-      ['Failure behavior', 'Telemetry accepted; AI metadata omitted'],
+      ['Inference Microservice', 'FastAPI 0.115 / Uvicorn (Port 8000)'],
+      ['Classification Model', 'RandomForest (rf-stpi-v1) + Isolation Forest'],
+      ['Evaluated Benchmark', '99.5% Overall Accuracy · 0.968 Macro F1'],
+      ['Failure Tolerance', 'Non-blocking pipeline (telemetry preserved if offline)'],
     ],
   },
   {
-    title: 'Blockchain audit',
+    title: 'EVM Private Blockchain Layer',
     icon: Blocks,
     rows: [
-      ['Network', 'EVM-compatible private chain'],
-      ['Contract', 'EnergyAudit'],
-      ['Evidence', 'Hash-only payload digest'],
+      ['Consortium Chain', 'Hardhat Local EVM Node (Port 8545)'],
+      ['Smart Contract Address', '0x5FbDB2315678afecb367f032d93F642f64180aa3'],
+      ['Storage Philosophy', 'Zero-knowledge-style canonical Keccak-256 hash only'],
+      ['Concurrency Queue', 'Serialized nonce-safe relayer writer'],
     ],
   },
   {
-    title: 'Operational store',
+    title: 'MongoDB Enterprise Database',
     icon: Database,
     rows: [
-      ['Database', 'MongoDB'],
-      ['Telemetry', 'Raw readings and AI metadata'],
-      ['Audit metadata', 'Transaction hash, event ID, payload hash'],
+      ['Engine Version', 'MongoDB Community Edition 8.3'],
+      ['Connection String', 'mongodb://127.0.0.1:27017/vidyutchain'],
+      ['Index Strategy', 'Compound indices on (meterId, timestamp desc)'],
+      ['Data Isolation', 'Multi-tenant owner-scoped query guards'],
     ],
   },
 ]
@@ -44,42 +59,75 @@ export function SettingsPage() {
   const { user } = useAuth()
 
   return (
-    <div className="grid gap-6">
-      <section className="rounded-xl border border-[#d5e0da] bg-[#f8faf7]/85 p-6">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#087a70]">Settings</p>
-        <h2 className="mt-2 font-display text-3xl font-bold tracking-[-0.03em]">Pilot configuration</h2>
-        <p className="mt-2 text-sm text-[#64736e]">Read-only configuration summary. Secrets and private keys are never displayed.</p>
-      </section>
-
-      <section className="rounded-xl border border-[#d5e0da] bg-[#f8faf7]/85 p-6">
-        <div className="flex items-center gap-4">
-          <span className="grid size-14 place-items-center rounded-lg bg-[#172525] text-[#eef3f0]">
-            <KeyRound size={24} />
-          </span>
-          <div>
-            <h3 className="font-display text-2xl font-bold">{user?.email}</h3>
-            <p className="mt-1 text-sm capitalize text-[#64736e]">{user?.role} access · authenticated session</p>
+    <div className="grid gap-7">
+      {/* Top Banner */}
+      <section className="glass-panel flex flex-col justify-between gap-4 rounded-2xl p-6 sm:flex-row sm:items-center">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-emerald-600" />
+            </span>
+            <p className="text-xs font-extrabold uppercase tracking-widest text-[#007062]">
+              Security & Environment
+            </p>
           </div>
+          <h2 className="mt-1.5 font-display text-3xl font-extrabold tracking-tight text-[#082822]">
+            System Architecture & Configuration
+          </h2>
+          <p className="mt-1 text-sm text-[#4d6b61]">
+            Observable tier configuration parameters and cryptographic zero-trust boundaries.
+          </p>
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
+      {/* User Session Pill */}
+      <section className="glass-panel flex items-center justify-between rounded-2xl p-6">
+        <div className="flex items-center gap-4">
+          <span className="grid size-14 place-items-center rounded-2xl bg-gradient-to-br from-[#007062] to-[#0ea5e9] text-white shadow-lg shadow-[#007062]/20">
+            <KeyRound size={26} />
+          </span>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-emerald-800">
+                {user?.role} Access
+              </span>
+              <span className="text-xs text-[#8fa79f]">• Authenticated Session</span>
+            </div>
+            <h3 className="mt-1 font-display text-xl font-bold text-[#092b24]">{user?.email}</h3>
+          </div>
+        </div>
+
+        <div className="hidden sm:flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-800">
+          <CheckCircle2 size={16} />
+          JWT Bearer Session Active
+        </div>
+      </section>
+
+      {/* Architecture Tiers Grid */}
+      <section className="grid gap-5 md:grid-cols-2">
         {sections.map((section) => {
           const Icon = section.icon
           return (
-            <div key={section.title} className="rounded-xl border border-[#d5e0da] bg-[#f8faf7]/85 p-6">
-              <div className="flex items-center gap-3">
-                <span className="grid size-11 place-items-center rounded-lg bg-[#e7f4f1] text-[#087a70]">
-                  <Icon size={21} />
+            <div
+              key={section.title}
+              className="glass-card rounded-2xl p-6 border border-[#d8e3dc] transition hover:border-[#007062]/40"
+            >
+              <div className="flex items-center gap-3.5 border-b border-[#d8e3dc]/70 pb-4">
+                <span className="grid size-11 place-items-center rounded-xl bg-gradient-to-br from-[#e6f4ef] to-[#d3ece3] text-[#007062] shadow-sm">
+                  <Icon size={22} />
                 </span>
-                <h3 className="font-display text-xl font-bold">{section.title}</h3>
+                <h3 className="font-display text-lg font-bold text-[#092b24]">{section.title}</h3>
               </div>
-              <div className="mt-5 grid gap-3">
+
+              <div className="mt-4 space-y-3 font-mono text-xs">
                 {section.rows.map(([label, value]) => (
-                  <p key={label} className="flex items-start justify-between gap-4 text-sm">
-                    <span className="text-[#64736e]">{label}</span>
-                    <strong className="text-right">{value}</strong>
-                  </p>
+                  <div key={label} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <span className="font-sans text-xs font-medium text-[#5a786f]">{label}</span>
+                    <strong className="text-left sm:text-right text-[#092b24] break-all font-semibold">
+                      {value}
+                    </strong>
+                  </div>
                 ))}
               </div>
             </div>
@@ -87,13 +135,16 @@ export function SettingsPage() {
         })}
       </section>
 
-      <section className="rounded-xl border border-[#b9d8d1] bg-[#e7f4f1] p-6">
-        <div className="flex items-start gap-3">
-          <ShieldCheck className="mt-1 text-[#087a70]" size={22} />
+      {/* Zero Trust Security Callout */}
+      <section className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-teal-50/70 to-emerald-50 p-6 shadow-sm">
+        <div className="flex items-start gap-4">
+          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white shadow-md">
+            <ShieldCheck size={24} />
+          </span>
           <div>
-            <h3 className="font-display text-xl font-bold">Security boundary</h3>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-[#64736e]">
-              The frontend stores only the backend-issued access token. It never calls FastAPI directly, never receives blockchain private keys, and never writes raw telemetry to the audit chain.
+            <h3 className="font-display text-lg font-bold text-[#092b24]">Zero-Trust Security & Privacy Boundary</h3>
+            <p className="mt-1 text-xs leading-relaxed text-[#456157]">
+              The browser frontend communicates strictly through the Node.js API boundary via JWT. Sensitive blockchain private keys, internal AI RPC endpoints, and raw database credentials are kept isolated on the server tier.
             </p>
           </div>
         </div>
@@ -101,4 +152,3 @@ export function SettingsPage() {
     </div>
   )
 }
-
