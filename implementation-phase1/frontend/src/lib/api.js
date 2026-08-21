@@ -56,4 +56,6 @@ export const api = {
     return apiRequest(`/api/telemetry/aggregation/${encodeURIComponent(meterId)}${query ? `?${query}` : ''}`, { token })
   },
   auditTelemetry: (token, telemetryId) => apiRequest(`/api/telemetry/audit/${encodeURIComponent(telemetryId)}`, { token }),
+  walletSummary: (token) => apiRequest('/api/wallet/summary', { token }),
+  energyListings: (token) => apiRequest('/api/marketplace/listings', { token }),
 }

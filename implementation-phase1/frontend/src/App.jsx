@@ -8,6 +8,7 @@ import { DashboardPage } from './pages/DashboardPage.jsx'
 import { HomePage } from './pages/HomePage.jsx'
 
 const PlatformPage = lazy(() => import('./pages/PlatformPage.jsx').then(({ PlatformPage }) => ({ default: PlatformPage })))
+const EnergyHubPage = lazy(() => import('./pages/EnergyHubPage.jsx').then(({ EnergyHubPage }) => ({ default: EnergyHubPage })))
 const ArchitecturePage = lazy(() => import('./pages/ArchitecturePage.jsx').then(({ ArchitecturePage }) => ({ default: ArchitecturePage })))
 const AiIntelligencePage = lazy(() => import('./pages/AiIntelligencePage.jsx').then(({ AiIntelligencePage }) => ({ default: AiIntelligencePage })))
 const BlockchainAuditPage = lazy(() => import('./pages/BlockchainAuditPage.jsx').then(({ BlockchainAuditPage }) => ({ default: BlockchainAuditPage })))
@@ -62,6 +63,7 @@ export default function App() {
                 <Route path="audit/:telemetryId" element={<AuditVerifyPage />} />
                 <Route path="health" element={<SystemHealthPage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="energy" element={<EnergyHubPage />} />
               </Route>
             </Route>
 

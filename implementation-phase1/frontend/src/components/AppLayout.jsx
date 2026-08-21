@@ -3,21 +3,15 @@ import {
   Activity,
   AlertTriangle,
   Blocks,
-  CheckCircle2,
-  ChevronRight,
+  CircleDollarSign,
   Cpu,
   Gauge,
-  HelpCircle,
   LayoutDashboard,
   LogOut,
   Menu,
   Radio,
-  RefreshCw,
-  Search,
   Settings,
   ShieldCheck,
-  Sparkles,
-  User,
   X,
   Zap,
 } from 'lucide-react'
@@ -46,6 +40,12 @@ const navGroups = [
     items: [
       { label: 'System Health', href: '/app/health', icon: ShieldCheck },
       { label: 'Settings', href: '/app/settings', icon: Settings },
+    ],
+  },
+  {
+    group: 'ENERGY ECONOMY',
+    items: [
+      { label: 'Energy Hub', href: '/app/energy', icon: CircleDollarSign, badge: 'BETA' },
     ],
   },
 ]
