@@ -1,0 +1,12 @@
+flask
+flask-cors
+requests
+numpy
+pandas
+python-dotenv
+openai
+cryptography
+pytz
+tzdata
+gunicorn
+langchain-deepseek

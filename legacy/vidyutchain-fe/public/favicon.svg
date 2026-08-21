@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="70" height="70" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="70" height="70" rx="10" fill="#1F2937" />
+  
+  <!-- Lightning bolt symbol -->
+  <path d="M30 15L15 35H28L12 55L40 30H25L30 15Z" fill="#9333EA" />
+  
+  <!-- Solar panel element -->
+  <rect x="45" y="25" width="20" height="20" rx="2" fill="#4F46E5" />
+  <rect x="47" y="27" width="7" height="7" rx="1" fill="#A5B4FC" />
+  <rect x="56" y="27" width="7" height="7" rx="1" fill="#A5B4FC" />
+  <rect x="47" y="36" width="7" height="7" rx="1" fill="#A5B4FC" />
+  <rect x="56" y="36" width="7" height="7" rx="1" fill="#A5B4FC" />
+</svg>
