@@ -17,6 +17,7 @@ const AlertsPage = lazy(() => import('./pages/AlertsPage.jsx').then(({ AlertsPag
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage.jsx').then(({ AnalyticsPage }) => ({ default: AnalyticsPage })))
 const AuditPage = lazy(() => import('./pages/AuditPage.jsx').then(({ AuditPage }) => ({ default: AuditPage })))
 const AuditVerifyPage = lazy(() => import('./pages/AuditVerifyPage.jsx').then(({ AuditVerifyPage }) => ({ default: AuditVerifyPage })))
+const CertificatesPage = lazy(() => import('./pages/CertificatesPage.jsx').then(({ CertificatesPage }) => ({ default: CertificatesPage })))
 const LiveMonitoringPage = lazy(() => import('./pages/LiveMonitoringPage.jsx').then(({ LiveMonitoringPage }) => ({ default: LiveMonitoringPage })))
 const LoginPage = lazy(() => import('./pages/LoginPage.jsx').then(({ LoginPage }) => ({ default: LoginPage })))
 const MeterDetailPage = lazy(() => import('./pages/MeterDetailPage.jsx').then(({ MeterDetailPage }) => ({ default: MeterDetailPage })))
@@ -24,6 +25,9 @@ const MetersPage = lazy(() => import('./pages/MetersPage.jsx').then(({ MetersPag
 const RegisterPage = lazy(() => import('./pages/RegisterPage.jsx').then(({ RegisterPage }) => ({ default: RegisterPage })))
 const SettingsPage = lazy(() => import('./pages/SettingsPage.jsx').then(({ SettingsPage }) => ({ default: SettingsPage })))
 const SystemHealthPage = lazy(() => import('./pages/SystemHealthPage.jsx').then(({ SystemHealthPage }) => ({ default: SystemHealthPage })))
+const TendersPage = lazy(() => import('./pages/TendersPage.jsx').then(({ TendersPage }) => ({ default: TendersPage })))
+const TradingPage = lazy(() => import('./pages/TradingPage.jsx').then(({ TradingPage }) => ({ default: TradingPage })))
+const WalletPage = lazy(() => import('./pages/WalletPage.jsx').then(({ WalletPage }) => ({ default: WalletPage })))
 
 function RouteLoading() {
   return <div className="grid min-h-screen place-items-center bg-[#f4f7f5] text-sm font-semibold text-[#64736e]">Loading VidyutChain…</div>
@@ -57,6 +61,10 @@ export default function App() {
                 <Route path="live" element={<LiveMonitoringPage />} />
                 <Route path="meters" element={<MetersPage />} />
                 <Route path="meters/:meterId" element={<MeterDetailPage />} />
+                <Route path="wallet" element={<WalletPage />} />
+                <Route path="trading" element={<TradingPage />} />
+                <Route path="certificates" element={<CertificatesPage />} />
+                <Route path="tenders" element={<TendersPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="alerts" element={<AlertsPage />} />
                 <Route path="audit" element={<AuditPage />} />

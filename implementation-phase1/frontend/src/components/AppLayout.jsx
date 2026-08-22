@@ -3,15 +3,25 @@ import {
   Activity,
   AlertTriangle,
   Blocks,
-  CircleDollarSign,
+  CheckCircle2,
+  ChevronRight,
   Cpu,
+  Gavel,
   Gauge,
+  HelpCircle,
   LayoutDashboard,
+  Leaf,
   LogOut,
   Menu,
   Radio,
+  RefreshCw,
+  Search,
   Settings,
   ShieldCheck,
+  ShoppingBag,
+  Sparkles,
+  User,
+  Wallet,
   X,
   Zap,
 } from 'lucide-react'
@@ -28,6 +38,15 @@ const navGroups = [
     ],
   },
   {
+    group: 'ENERGY MARKET & SETTLEMENT',
+    items: [
+      { label: 'Smart Wallet', href: '/app/wallet', icon: Wallet, badge: 'Auto-Pay' },
+      { label: 'P2P Solar Trading', href: '/app/trading', icon: ShoppingBag, badge: 'Solana' },
+      { label: 'Carbon ESG Registry', href: '/app/certificates', icon: Leaf, badge: 'CO2' },
+      { label: 'Grid Tenders', href: '/app/tenders', icon: Gavel, badge: 'B2B' },
+    ],
+  },
+  {
     group: 'INTELLIGENCE & AUDIT',
     items: [
       { label: 'Energy Analytics', href: '/app/analytics', icon: Radio },
@@ -40,12 +59,6 @@ const navGroups = [
     items: [
       { label: 'System Health', href: '/app/health', icon: ShieldCheck },
       { label: 'Settings', href: '/app/settings', icon: Settings },
-    ],
-  },
-  {
-    group: 'ENERGY ECONOMY',
-    items: [
-      { label: 'Energy Hub', href: '/app/energy', icon: CircleDollarSign, badge: 'BETA' },
     ],
   },
 ]

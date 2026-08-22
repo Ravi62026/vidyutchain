@@ -5,8 +5,12 @@ import helmet from 'helmet'
 import pinoHttp from 'pino-http'
 import { createAuthRouter } from './routes/auth.routes.js'
 import { createBlockchainClient } from './blockchain/client.js'
+import { createCertificateRouter } from './routes/certificate.routes.js'
 import { createMeterRouter } from './routes/meter.routes.js'
 import { createTelemetryRouter } from './routes/telemetry.routes.js'
+import { createTenderRouter } from './routes/tender.routes.js'
+import { createTradingRouter } from './routes/trading.routes.js'
+import { createWalletRouter } from './routes/wallet.routes.js'
 
 export function createApp({ blockchainClient = createBlockchainClient() } = {}) {
   const app = express()
@@ -20,6 +24,10 @@ export function createApp({ blockchainClient = createBlockchainClient() } = {}) 
   app.use('/api/auth', createAuthRouter())
   app.use('/api/meters', createMeterRouter({ blockchainClient }))
   app.use('/api/telemetry', createTelemetryRouter({ blockchainClient }))
+  app.use('/api/wallet', createWalletRouter())
+  app.use('/api/trading', createTradingRouter())
+  app.use('/api/certificates', createCertificateRouter())
+  app.use('/api/tenders', createTenderRouter())
 
   app.get('/health', (_request, response) => {
     response.json({ service: 'vidyutchain-backend', status: 'ok' })

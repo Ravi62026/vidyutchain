@@ -157,11 +157,91 @@ async function main() {
     }
   }
 
+  console.log('\n5. Smart Energy Wallet Auto-Settle & Demonstration Balances...')
+  const walletRes = await get('/api/wallet', token)
+  console.log(`   ✅ Admin Wallet Balance: ₹${walletRes.data?.wallet?.balanceInr?.toFixed(2)} | Solana ID: ${walletRes.data?.wallet?.solanaPublicKey?.slice(0, 12)}…`)
+
+  // Register consumer account & wallet
+  let consumerReg = await post('/api/auth/register', {
+    email: 'consumer@vidyutchain.io',
+    password: 'ConsumerDemo123!',
+    role: 'consumer',
+  })
+  let consumerToken = consumerReg.data?.accessToken
+  if (!consumerToken) {
+    const consumerLogin = await post('/api/auth/login', {
+      email: 'consumer@vidyutchain.io',
+      password: 'ConsumerDemo123!',
+    })
+    consumerToken = consumerLogin.data?.accessToken
+  }
+  const consumerWallet = await get('/api/wallet', consumerToken)
+  console.log(`   ✅ Consumer Wallet Balance: ₹${consumerWallet.data?.wallet?.balanceInr?.toFixed(2)} | Solana ID: ${consumerWallet.data?.wallet?.solanaPublicKey?.slice(0, 12)}…`)
+
+  console.log('\n6. Seeding P2P Solar Energy Marketplace Listings...')
+  const listing1 = await post('/api/trading/list', {
+    meterId: 'M001',
+    energyAmountKwh: 25.0,
+    pricePerKwh: 3.20,
+    sourceType: 'rooftop_solar',
+  }, token)
+  console.log('   ✅ P2P Offer 1:', listing1.data?.message || 'Listed')
+
+  const listing2 = await post('/api/trading/list', {
+    meterId: 'M005',
+    energyAmountKwh: 40.0,
+    pricePerKwh: 2.95,
+    sourceType: 'rooftop_solar',
+  }, consumerToken)
+  console.log('   ✅ P2P Offer 2:', listing2.data?.message || 'Listed')
+
+  console.log('\n7. Minting Verifiable Green Carbon Offset Certificates (0.85 kg CO2/kWh)...')
+  const cert1 = await post('/api/certificates/issue', {
+    meterId: 'M001',
+    energyAmountKwh: 50.0,
+  }, token)
+  console.log('   ✅ Carbon Certificate Minted:', cert1.data?.certificate?.certificateId, `(${cert1.data?.certificate?.carbonOffsetKg} kg CO2)`)
+
+  const cert2 = await post('/api/certificates/issue', {
+    meterId: 'M005',
+    energyAmountKwh: 120.0,
+  }, consumerToken)
+  console.log('   ✅ Carbon Certificate Minted:', cert2.data?.certificate?.certificateId, `(${cert2.data?.certificate?.carbonOffsetKg} kg CO2)`)
+
+  console.log('\n8. Publishing DISCOM Bulk Power Procurement Tenders & Supplier Bids...')
+  const tenderRes = await post('/api/tenders', {
+    title: 'East Bangalore Feeder 04 Daytime Solar Procurement',
+    description: 'Bulk clean energy procurement to support localized EV charging station clusters during peak afternoon demand.',
+    feederArea: 'Substation Feeder 04 - East Bangalore Industrial Hub',
+    energyRequiredKwh: 5000,
+    maxBasePricePerKwh: 3.80,
+    daysOpen: 14,
+  }, token)
+  const tenderId = tenderRes.data?.tender?._id
+  console.log('   ✅ Tender Published:', tenderRes.data?.tender?.tenderId)
+
+  if (tenderId) {
+    const bidRes = await post(`/api/tenders/${tenderId}/bid`, {
+      bidPricePerKwh: 3.15,
+      capacityOfferedKw: 500,
+      bidderCompanyName: 'SunPower Microgrid Solutions Ltd.',
+      deliveryTimelineDays: 5,
+    }, consumerToken)
+    console.log('   ✅ Supplier Bid Submitted:', bidRes.data?.message)
+  }
+
   console.log('\n=====================================================')
-  console.log('🎉 SEED & VERIFICATION COMPLETE!')
-  console.log('👉 Dashboard URL: http://localhost:5173')
-  console.log('👉 Admin Login:   admin@vidyutchain.io / AdminDemoPassword123!')
-  console.log('=====================================================\n')
+  console.log('🎉 ALL 8 ECOSYSTEM MODULES SEEDED & READY FOR TESTING!')
+  console.log('=====================================================')
+  console.log('👉 Dashboard:      http://localhost:5173/app')
+  console.log('👉 Smart Wallet:   http://localhost:5173/app/wallet')
+  console.log('👉 P2P Trading:    http://localhost:5173/app/trading')
+  console.log('👉 Carbon ESG:     http://localhost:5173/app/certificates')
+  console.log('👉 Grid Tenders:   http://localhost:5173/app/tenders')
+  console.log('👉 AI Radar:       http://localhost:5173/ai-intelligence\n')
 }
 
-main().catch(console.error)
+main().catch((err) => {
+  console.error('Fatal error during seed execution:', err)
+  process.exit(1)
+})

@@ -4,6 +4,7 @@ import { hashPassword, comparePassword } from '../auth/password.js'
 import { createAccessToken } from '../auth/token.js'
 import { requireAuth } from '../middleware/auth.js'
 import { User } from '../models/user.model.js'
+import { getOrCreateWallet } from './wallet.routes.js'
 
 const credentialsSchema = z.object({
   email: z.string().email().transform((value) => value.toLowerCase()),
@@ -39,7 +40,18 @@ export function createAuthRouter() {
       role: parsed.data.role,
     })
 
-    return response.status(201).json({ user: publicUser(user), accessToken: createAccessToken(user) })
+    // Auto-provision dual-chain custodial wallet
+    const wallet = await getOrCreateWallet(user._id, user.email)
+
+    return response.status(201).json({
+      user: publicUser(user),
+      wallet: {
+        solanaPublicKey: wallet.solanaPublicKey,
+        ethereumAddress: wallet.ethereumAddress,
+        balanceInr: wallet.balanceInr,
+      },
+      accessToken: createAccessToken(user),
+    })
   })
 
   router.post('/login', async (request, response) => {
@@ -53,8 +65,20 @@ export function createAuthRouter() {
       return response.status(401).json({ error: 'Invalid email or password' })
     }
 
-    return response.json({ user: publicUser(user), accessToken: createAccessToken(user) })
+    // Ensure wallet exists
+    const wallet = await getOrCreateWallet(user._id, user.email)
+
+    return response.json({
+      user: publicUser(user),
+      wallet: {
+        solanaPublicKey: wallet.solanaPublicKey,
+        ethereumAddress: wallet.ethereumAddress,
+        balanceInr: wallet.balanceInr,
+      },
+      accessToken: createAccessToken(user),
+    })
   })
+
 
   router.get('/me', requireAuth, async (request, response) => {
     const user = await User.findById(request.user.sub).lean()

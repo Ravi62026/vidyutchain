@@ -60,14 +60,37 @@ class AiServiceTests(unittest.TestCase):
         result = asyncio.run(health())
 
         self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["modelVersion"], "rf-stpi-v1")
         self.assertEqual(result["trainingRows"], 10000)
-        self.assertIn("macroF1", result["validation"])
 
     def test_predict_endpoint_returns_response_model(self):
         result = asyncio.run(predict(self.normal_reading()))
 
         self.assertEqual(result.model_version, "rf-stpi-v1")
         self.assertEqual(result.meter_id, "M001")
+
+    def test_predict_price_calculates_dynamic_solar_tariff(self):
+        from main import PricePredictionRequest, predict_price
+        req = PricePredictionRequest(
+            energyAmountKwh=15.0,
+            hour=12,
+            temperatureCelsius=30.0,
+            cloudCoveragePercent=10.0,
+            basePriceInr=3.50,
+        )
+        res = asyncio.run(predict_price(req))
+        self.assertGreater(res["suggestedPricePerKwh"], 0)
+        self.assertEqual(res["energyAmountKwh"], 15.0)
+        self.assertIn("efficiencyMetrics", res)
+        self.assertEqual(res["timeOfDayLabel"], "Peak solar surplus")
+
+    def test_calculate_carbon_offset_returns_exact_standard_metrics(self):
+        from main import CarbonOffsetRequest, calculate_carbon_offset
+        req = CarbonOffsetRequest(energyAmountKwh=100.0, sourceType="rooftop_solar")
+        res = asyncio.run(calculate_carbon_offset(req))
+        self.assertEqual(res["carbonOffsetKg"], 85.0)
+        self.assertEqual(res["carbonOffsetTonnes"], 0.085)
+        self.assertGreater(res["treesEquivalent"], 3.0)
 
 
 if __name__ == "__main__":

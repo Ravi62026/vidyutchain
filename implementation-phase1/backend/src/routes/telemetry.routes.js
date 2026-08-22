@@ -2,10 +2,54 @@ import { Router } from 'express'
 import mongoose from 'mongoose'
 import { z } from 'zod'
 import { classifyTelemetry } from '../ai/client.js'
+import { generateDePinSignature } from '../blockchain/solanaClient.js'
 import { requireAuth } from '../middleware/auth.js'
 import { Alert } from '../models/alert.model.js'
 import { Meter } from '../models/meter.model.js'
 import { Telemetry } from '../models/telemetry.model.js'
+import { TransactionLedger } from '../models/transactionLedger.model.js'
+import { getOrCreateWallet } from './wallet.routes.js'
+
+async function handleAutoSettleExport(userId, userEmail, meterId, exportKwh) {
+  if (!exportKwh || exportKwh <= 0 || !userId) return
+  try {
+    const wallet = await getOrCreateWallet(userId, userEmail || 'consumer@vidyutchain.io')
+    if (!wallet.autoSettleEnabled) return
+
+    const earnings = Number((exportKwh * (wallet.feedInTariffRateInr || 3.5)).toFixed(2))
+    if (earnings <= 0) return
+
+    wallet.balanceInr += earnings
+    wallet.totalSolarEarningsInr += earnings
+    wallet.totalCarbonOffsetKg += Number((exportKwh * 0.85).toFixed(3))
+    await wallet.save()
+
+    const sig = generateDePinSignature({
+      type: 'SOLAR_EXPORT_AUTOPAY',
+      userId: userId.toString(),
+      meterId,
+      kwh: exportKwh,
+      earnings,
+    })
+
+    await TransactionLedger.create({
+      walletId: wallet._id,
+      userId,
+      type: 'SOLAR_EXPORT_CREDIT',
+      amountInr: earnings,
+      balanceAfterInr: wallet.balanceInr,
+      energyKwh: exportKwh,
+      ratePerKwh: wallet.feedInTariffRateInr || 3.5,
+      description: `Rooftop Solar Feed-in Auto-Credit: ${exportKwh} kWh exported by Meter ${meterId}`,
+      referenceId: meterId,
+      solanaTxSignature: sig,
+      status: 'completed',
+    })
+  } catch {
+    // Non-blocking background settlement
+  }
+}
+
 
 export const telemetryInputSchema = z.object({
   meterId: z.string().trim().min(3).max(64).transform((value) => value.toUpperCase()),
@@ -261,6 +305,10 @@ export function createTelemetryRouter({ blockchainClient = null } = {}) {
     await persistAiResult(telemetry, await classifyTelemetry(parsed.data), blockchainClient, request)
     await updateLastSeen([telemetry.meterId], telemetry.timestamp)
 
+    if (parsed.data.exportKwh > 0) {
+      await handleAutoSettleExport(request.user.sub, request.user.email, parsed.data.meterId, parsed.data.exportKwh)
+    }
+
     return response.status(201).json({ telemetry: publicTelemetry(telemetry) })
   })
 
@@ -282,6 +330,13 @@ export function createTelemetryRouter({ blockchainClient = null } = {}) {
       [...new Set(telemetry.map((item) => item.meterId))],
       new Date(Math.max(...telemetry.map((item) => item.timestamp.getTime()))),
     )
+
+    for (const item of parsed.data) {
+      if (item.exportKwh > 0) {
+        await handleAutoSettleExport(request.user.sub, request.user.email, item.meterId, item.exportKwh)
+      }
+    }
+
 
     return response.status(201).json({
       count: telemetry.length,

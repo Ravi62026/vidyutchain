@@ -203,3 +203,108 @@ async def predict(payload: PredictionRequest) -> PredictionResponse:
         return predict_reading(payload)
     except (ValueError, TypeError) as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+# --- Dynamic Solar Forecasting & Pricing Models ---
+
+class PricePredictionRequest(BaseModel):
+    energy_amount_kwh: float = Field(default=10.0, alias="energyAmountKwh", ge=0.1)
+    hour: int = Field(default=12, ge=0, le=23)
+    month: int = Field(default=8, ge=1, le=12)
+    temperature_celsius: float = Field(default=28.0, alias="temperatureCelsius", ge=-20, le=60)
+    cloud_coverage_percent: float = Field(default=15.0, alias="cloudCoveragePercent", ge=0, le=100)
+    base_price_inr: float = Field(default=3.50, alias="basePriceInr", ge=0.5, le=50.0)
+
+
+TIME_OF_DAY_FACTORS = {
+    0: ("Night off-peak", 1.8),
+    1: ("Night off-peak", 1.8),
+    2: ("Night off-peak", 1.8),
+    3: ("Night off-peak", 1.8),
+    4: ("Night off-peak", 1.7),
+    5: ("Early morning", 1.6),
+    6: ("Early morning", 1.4),
+    7: ("Morning transition", 1.25),
+    8: ("Morning shoulder", 1.15),
+    9: ("Peak solar approach", 1.05),
+    10: ("Peak solar surplus", 0.90),
+    11: ("Peak solar surplus", 0.88),
+    12: ("Peak solar surplus", 0.85),
+    13: ("Peak solar surplus", 0.88),
+    14: ("Post-peak solar", 0.92),
+    15: ("Afternoon shoulder", 1.10),
+    16: ("Late afternoon", 1.25),
+    17: ("Evening transition", 1.40),
+    18: ("Evening peak demand", 1.65),
+    19: ("Evening peak demand", 1.75),
+    20: ("Night peak", 1.60),
+    21: ("Night shoulder", 1.50),
+    22: ("Night off-peak", 1.70),
+    23: ("Night off-peak", 1.80),
+}
+
+
+@app.post("/predict-price")
+async def predict_price(payload: PricePredictionRequest) -> dict[str, Any]:
+    time_label, time_multiplier = TIME_OF_DAY_FACTORS.get(payload.hour, ("Standard", 1.0))
+
+    # Temperature panel degradation: ~0.4% efficiency loss per degree above 25°C
+    if payload.temperature_celsius <= 25:
+        temp_efficiency = 1.0 + min(0.04, (25 - payload.temperature_celsius) * 0.002)
+    else:
+        temp_efficiency = max(0.78, 1.0 - (payload.temperature_celsius - 25) * 0.004)
+
+    # Cloud factor: Irradiance reduction
+    cloud_factor = max(0.20, 1.0 - (payload.cloud_coverage_percent / 100.0) * 0.70)
+    estimated_irradiance = round(max(0.0, 1000.0 * cloud_factor * (1.0 if 6 <= payload.hour <= 18 else 0.0)), 1)
+
+    # Combined dynamic tariff calculation
+    suggested_price = payload.base_price_inr * time_multiplier * (1.0 / max(0.55, temp_efficiency * cloud_factor))
+    suggested_price = round(max(1.50, min(12.00, suggested_price)), 2)
+
+    total_value = round(suggested_price * payload.energy_amount_kwh, 2)
+
+    return {
+        "suggestedPricePerKwh": suggested_price,
+        "basePriceInr": payload.base_price_inr,
+        "energyAmountKwh": payload.energy_amount_kwh,
+        "totalEstimatedInr": total_value,
+        "timeOfDayLabel": time_label,
+        "estimatedIrradianceWm2": estimated_irradiance,
+        "efficiencyMetrics": {
+            "timeMultiplier": time_multiplier,
+            "tempEfficiency": round(temp_efficiency, 3),
+            "cloudFactor": round(cloud_factor, 3),
+        },
+        "marketAdvice": (
+            "Optimal solar export window. High P2P liquidity."
+            if 10 <= payload.hour <= 14
+            else ("High demand peak hours. Premium pricing advised." if 18 <= payload.hour <= 21 else "Standard off-peak trading conditions.")
+        ),
+    }
+
+
+# --- Carbon Offset & ESG Models ---
+
+class CarbonOffsetRequest(BaseModel):
+    energy_amount_kwh: float = Field(alias="energyAmountKwh", ge=0)
+    source_type: str = Field(default="rooftop_solar", alias="sourceType")
+
+
+@app.post("/calculate-carbon-offset")
+async def calculate_carbon_offset(payload: CarbonOffsetRequest) -> dict[str, Any]:
+    # Standard grid displacement factor in India: 0.85 kg CO2 per kWh
+    CARBON_FACTOR_KG_PER_KWH = 0.85
+    carbon_offset_kg = round(payload.energy_amount_kwh * CARBON_FACTOR_KG_PER_KWH, 3)
+    trees_equivalent = round(carbon_offset_kg / 21.77, 2)
+
+    return {
+        "energyAmountKwh": payload.energy_amount_kwh,
+        "carbonOffsetKg": carbon_offset_kg,
+        "carbonOffsetTonnes": round(carbon_offset_kg / 1000.0, 4),
+        "treesEquivalent": trees_equivalent,
+        "factorUsed": CARBON_FACTOR_KG_PER_KWH,
+        "sourceType": payload.source_type,
+        "complianceStandard": "GHG Protocol Corporate Standard (Scope 2 Displacement)",
+    }
+
