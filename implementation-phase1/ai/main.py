@@ -264,6 +264,53 @@ async def predict_price(payload: PricePredictionRequest) -> dict[str, Any]:
 
     total_value = round(suggested_price * payload.energy_amount_kwh, 2)
 
+    # Standard physics rule-based advice
+    fallback_advice = (
+        "Optimal solar export window. High P2P liquidity."
+        if 10 <= payload.hour <= 14
+        else ("High demand peak hours. Premium pricing advised." if 18 <= payload.hour <= 21 else "Standard off-peak trading conditions.")
+    )
+
+    # Optional LLM-powered market reasoning (if OPENAI_API_KEY or GEMINI_API_KEY is configured)
+    llm_advice = None
+    openai_key = os.getenv("OPENAI_API_KEY")
+    gemini_key = os.getenv("GEMINI_API_KEY")
+
+    if openai_key or gemini_key:
+        import httpx
+        prompt = (
+            f"You are VidyutChain's AI Solar Grid Pricing Advisor. A prosumer is listing {payload.energy_amount_kwh} kWh of rooftop solar energy "
+            f"at {payload.hour}:00 hours (Temp: {payload.temperature_celsius}°C, Cloud: {payload.cloud_coverage_percent}%). "
+            f"Base tariff is ₹{payload.base_price_inr}/kWh and physics model calculated ₹{suggested_price}/kWh. "
+            f"Give a concise 1-2 sentence prosumer trading advice on whether to sell now or store."
+        )
+        try:
+            if openai_key:
+                async with httpx.AsyncClient(timeout=3.0) as client:
+                    res = await client.post(
+                        "https://api.openai.com/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
+                        json={
+                            "model": "gpt-4o-mini",
+                            "messages": [{"role": "user", "content": prompt}],
+                            "max_tokens": 100,
+                            "temperature": 0.3,
+                        },
+                    )
+                    if res.status_code == 200:
+                        llm_advice = res.json()["choices"][0]["message"]["content"].strip()
+            elif gemini_key:
+                async with httpx.AsyncClient(timeout=3.0) as client:
+                    res = await client.post(
+                        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}",
+                        headers={"Content-Type": "application/json"},
+                        json={"contents": [{"parts": [{"text": prompt}]}]},
+                    )
+                    if res.status_code == 200:
+                        llm_advice = res.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+        except Exception:
+            llm_advice = None
+
     return {
         "suggestedPricePerKwh": suggested_price,
         "basePriceInr": payload.base_price_inr,
@@ -276,11 +323,8 @@ async def predict_price(payload: PricePredictionRequest) -> dict[str, Any]:
             "tempEfficiency": round(temp_efficiency, 3),
             "cloudFactor": round(cloud_factor, 3),
         },
-        "marketAdvice": (
-            "Optimal solar export window. High P2P liquidity."
-            if 10 <= payload.hour <= 14
-            else ("High demand peak hours. Premium pricing advised." if 18 <= payload.hour <= 21 else "Standard off-peak trading conditions.")
-        ),
+        "marketAdvice": llm_advice or fallback_advice,
+        "aiEngine": "LLM-Augmented (GPT/Gemini)" if llm_advice else "Physics-Informed ML (STPI v1)",
     }
 
 
