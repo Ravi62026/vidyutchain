@@ -18,8 +18,11 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react'
+import { useAuth } from '../context/useAuth.js'
+import { api } from '../lib/api.js'
 
 export function TradingPage() {
+  const { accessToken } = useAuth()
   const [listings, setListings] = useState([])
   const [myListings, setMyListings] = useState([])
   const [loading, setLoading] = useState(true)
@@ -39,14 +42,9 @@ export function TradingPage() {
   const [buyingId, setBuyingId] = useState(null)
 
   const fetchListings = async () => {
+    if (!accessToken) return
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const response = await fetch(`${apiBase}/api/trading/listings`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!response.ok) throw new Error('Failed to fetch trading listings')
-      const data = await response.json()
+      const data = await api.getTradingListings(accessToken)
       setListings(data.marketListings || [])
       setMyListings(data.myListings || [])
     } catch (err) {
@@ -58,17 +56,13 @@ export function TradingPage() {
 
   useEffect(() => {
     fetchListings()
-  }, [])
+  }, [accessToken])
 
   const requestAiPriceSuggestion = async () => {
+    if (!accessToken) return
     setAiLoading(true)
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/api/trading/suggest-price?kwh=${listForm.energyAmountKwh}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const data = await res.json()
+      const data = await api.suggestPrice(accessToken, listForm.energyAmountKwh)
       setAiPriceSuggestion(data)
       if (data.suggestedPricePerKwh) {
         setListForm((prev) => ({ ...prev, pricePerKwh: data.suggestedPricePerKwh }))
@@ -84,23 +78,12 @@ export function TradingPage() {
     e.preventDefault()
     setError('')
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/api/trading/list`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          meterId: listForm.meterId,
-          energyAmountKwh: Number(listForm.energyAmountKwh),
-          pricePerKwh: Number(listForm.pricePerKwh),
-          sourceType: listForm.sourceType,
-        }),
+      const data = await api.listEnergy(accessToken, {
+        meterId: listForm.meterId,
+        energyAmountKwh: Number(listForm.energyAmountKwh),
+        pricePerKwh: Number(listForm.pricePerKwh),
+        sourceType: listForm.sourceType,
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
       setSuccessMessage(data.message)
       setShowListModal(false)
       fetchListings()
@@ -114,18 +97,7 @@ export function TradingPage() {
     setError('')
     setSuccessMessage('')
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/api/trading/buy/${listingId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ buyKwh: kwh }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      const data = await api.buyEnergy(accessToken, listingId, kwh)
       setSuccessMessage(data.message)
       fetchListings()
     } catch (err) {

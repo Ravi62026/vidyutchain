@@ -24,8 +24,11 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react'
+import { useAuth } from '../context/useAuth.js'
+import { api } from '../lib/api.js'
 
 export function WalletPage() {
+  const { accessToken } = useAuth()
   const [wallet, setWallet] = useState(null)
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -43,14 +46,9 @@ export function WalletPage() {
   const [actionSuccess, setActionSuccess] = useState('')
 
   const fetchWallet = async () => {
+    if (!accessToken) return
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const response = await fetch(`${apiBase}/api/wallet`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!response.ok) throw new Error('Failed to fetch wallet data')
-      const data = await response.json()
+      const data = await api.getWallet(accessToken)
       setWallet(data.wallet)
       setTransactions(data.transactions)
     } catch (err) {
@@ -62,7 +60,7 @@ export function WalletPage() {
 
   useEffect(() => {
     fetchWallet()
-  }, [])
+  }, [accessToken])
 
   const copyToClipboard = (text, type) => {
     navigator.clipboard.writeText(text)
@@ -76,19 +74,9 @@ export function WalletPage() {
   }
 
   const toggleAutoSettle = async () => {
-    if (!wallet) return
+    if (!wallet || !accessToken) return
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/api/wallet/auto-settle`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ enabled: !wallet.autoSettleEnabled }),
-      })
-      const data = await res.json()
+      const data = await api.toggleAutoSettle(accessToken, !wallet.autoSettleEnabled)
       setWallet((prev) => ({ ...prev, autoSettleEnabled: data.autoSettleEnabled }))
     } catch (err) {
       console.error(err)
@@ -100,18 +88,7 @@ export function WalletPage() {
     setActionLoading(true)
     setActionSuccess('')
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/api/wallet/deposit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ amountInr: Number(depositAmount) }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      const data = await api.depositWallet(accessToken, { amountInr: Number(depositAmount) })
       setActionSuccess(data.message)
       setShowDepositModal(false)
       fetchWallet()
@@ -127,21 +104,10 @@ export function WalletPage() {
     setActionLoading(true)
     setActionSuccess('')
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/api/wallet/withdraw`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          amountInr: Number(withdrawAmount),
-          payoutUpiId: withdrawUpi,
-        }),
+      const data = await api.withdrawWallet(accessToken, {
+        amountInr: Number(withdrawAmount),
+        payoutUpiId: withdrawUpi,
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
       setActionSuccess(data.message)
       setShowWithdrawModal(false)
       fetchWallet()

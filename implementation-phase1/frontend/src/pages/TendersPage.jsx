@@ -13,8 +13,11 @@ import {
   ShieldCheck,
   Zap,
 } from 'lucide-react'
+import { useAuth } from '../context/useAuth.js'
+import { api } from '../lib/api.js'
 
 export function TendersPage() {
+  const { accessToken } = useAuth()
   const [tenders, setTenders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -40,14 +43,9 @@ export function TendersPage() {
   })
 
   const fetchTenders = async () => {
+    if (!accessToken) return
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const response = await fetch(`${apiBase}/api/tenders`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!response.ok) throw new Error('Failed to fetch tenders')
-      const data = await response.json()
+      const data = await api.getTenders(accessToken)
       setTenders(data.tenders || [])
     } catch (err) {
       setError(err.message)
@@ -58,29 +56,18 @@ export function TendersPage() {
 
   useEffect(() => {
     fetchTenders()
-  }, [])
+  }, [accessToken])
 
   const handleCreateTender = async (e) => {
     e.preventDefault()
     setError('')
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/api/tenders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...createForm,
-          energyRequiredKwh: Number(createForm.energyRequiredKwh),
-          maxBasePricePerKwh: Number(createForm.maxBasePricePerKwh),
-          daysOpen: Number(createForm.daysOpen),
-        }),
+      const data = await api.createTender(accessToken, {
+        ...createForm,
+        energyRequiredKwh: Number(createForm.energyRequiredKwh),
+        maxBasePricePerKwh: Number(createForm.maxBasePricePerKwh),
+        daysOpen: Number(createForm.daysOpen),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
       setSuccessMessage(data.message)
       setShowCreateModal(false)
       fetchTenders()
@@ -94,23 +81,12 @@ export function TendersPage() {
     if (!bidModalTender) return
     setError('')
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/api/tenders/${bidModalTender.id}/bid`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          bidPricePerKwh: Number(bidForm.bidPricePerKwh),
-          capacityOfferedKw: Number(bidForm.capacityOfferedKw),
-          bidderCompanyName: bidForm.bidderCompanyName,
-          deliveryTimelineDays: Number(bidForm.deliveryTimelineDays),
-        }),
+      const data = await api.submitBid(accessToken, bidModalTender.id, {
+        bidPricePerKwh: Number(bidForm.bidPricePerKwh),
+        capacityOfferedKw: Number(bidForm.capacityOfferedKw),
+        bidderCompanyName: bidForm.bidderCompanyName,
+        deliveryTimelineDays: Number(bidForm.deliveryTimelineDays),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
       setSuccessMessage(data.message)
       setBidModalTender(null)
       fetchTenders()
@@ -122,18 +98,7 @@ export function TendersPage() {
   const handleAward = async (tenderId, bidId) => {
     setError('')
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/api/tenders/${tenderId}/award`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ bidId }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      const data = await api.awardTender(accessToken, tenderId, bidId)
       setSuccessMessage(data.message)
       fetchTenders()
     } catch (err) {

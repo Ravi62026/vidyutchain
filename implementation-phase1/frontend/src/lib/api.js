@@ -56,6 +56,27 @@ export const api = {
     return apiRequest(`/api/telemetry/aggregation/${encodeURIComponent(meterId)}${query ? `?${query}` : ''}`, { token })
   },
   auditTelemetry: (token, telemetryId) => apiRequest(`/api/telemetry/audit/${encodeURIComponent(telemetryId)}`, { token }),
-  walletSummary: (token) => apiRequest('/api/wallet/summary', { token }),
-  energyListings: (token) => apiRequest('/api/marketplace/listings', { token }),
+  
+  // Wallet & Payment
+  getWallet: (token) => apiRequest('/api/wallet', { token }),
+  depositWallet: (token, data) => apiRequest('/api/wallet/deposit', { method: 'POST', body: data, token }),
+  withdrawWallet: (token, data) => apiRequest('/api/wallet/withdraw', { method: 'POST', body: data, token }),
+  toggleAutoSettle: (token, enabled) => apiRequest('/api/wallet/auto-settle', { method: 'POST', body: { enabled }, token }),
+
+  // P2P Solar Trading
+  getTradingListings: (token) => apiRequest('/api/trading/listings', { token }),
+  listEnergy: (token, data) => apiRequest('/api/trading/list', { method: 'POST', body: data, token }),
+  buyEnergy: (token, listingId, kwh) => apiRequest(`/api/trading/buy/${listingId}`, { method: 'POST', body: { buyKwh: kwh }, token }),
+  suggestPrice: (token, kwh) => apiRequest(`/api/trading/suggest-price?kwh=${kwh}`, { token }),
+
+  // Carbon ESG Certificates
+  getCertificates: (token) => apiRequest('/api/certificates', { token }),
+  issueCertificate: (token, data) => apiRequest('/api/certificates/issue', { method: 'POST', body: data, token }),
+  claimCertificate: (token, certId, purpose) => apiRequest(`/api/certificates/claim/${certId}`, { method: 'POST', body: { claimPurpose: purpose }, token }),
+
+  // DISCOM Power Tenders
+  getTenders: (token) => apiRequest('/api/tenders', { token }),
+  createTender: (token, data) => apiRequest('/api/tenders', { method: 'POST', body: data, token }),
+  submitBid: (token, tenderId, data) => apiRequest(`/api/tenders/${tenderId}/bid`, { method: 'POST', body: data, token }),
+  awardTender: (token, tenderId, bidId) => apiRequest(`/api/tenders/${tenderId}/award`, { method: 'POST', body: { bidId }, token }),
 }

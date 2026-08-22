@@ -13,8 +13,11 @@ import {
   TreeDeciduous,
   Zap,
 } from 'lucide-react'
+import { useAuth } from '../context/useAuth.js'
+import { api } from '../lib/api.js'
 
 export function CertificatesPage() {
+  const { accessToken } = useAuth()
   const [stats, setStats] = useState(null)
   const [certificates, setCertificates] = useState([])
   const [loading, setLoading] = useState(true)
@@ -23,14 +26,9 @@ export function CertificatesPage() {
   const [selectedCert, setSelectedCert] = useState(null)
 
   const fetchCertificates = async () => {
+    if (!accessToken) return
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const response = await fetch(`${apiBase}/api/certificates`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!response.ok) throw new Error('Failed to fetch certificates')
-      const data = await response.json()
+      const data = await api.getCertificates(accessToken)
       setStats(data.stats)
       setCertificates(data.marketCertificates || [])
     } catch (err) {
@@ -42,25 +40,14 @@ export function CertificatesPage() {
 
   useEffect(() => {
     fetchCertificates()
-  }, [])
+  }, [accessToken])
 
   const handleIssueTestCert = async () => {
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/api/certificates/issue`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          meterId: 'M001',
-          energyAmountKwh: 35.0,
-        }),
+      const data = await api.issueCertificate(accessToken, {
+        meterId: 'M001',
+        energyAmountKwh: 35.0,
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
       setSuccessMessage(data.message)
       fetchCertificates()
     } catch (err) {
@@ -70,18 +57,7 @@ export function CertificatesPage() {
 
   const handleClaim = async (certId) => {
     try {
-      const token = localStorage.getItem('vidyutchain_token') || sessionStorage.getItem('vidyutchain_token')
-      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/api/certificates/claim/${certId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ claimPurpose: 'Scope 2 ESG Decarbonization Mandate' }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      const data = await api.claimCertificate(accessToken, certId, 'Scope 2 ESG Decarbonization Mandate')
       setSuccessMessage(data.message)
       fetchCertificates()
     } catch (err) {
